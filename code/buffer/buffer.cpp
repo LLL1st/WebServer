@@ -7,10 +7,12 @@ Buffer::Buffer(int initBuffSize) : buffer_(initBuffSize), readPos_(0), writePos_
 size_t Buffer::WritableBytes() const {
     return buffer_.size() - writePos_;
 }
+
 // 可读的数量：写下标 - 读下标
 size_t Buffer::ReadableBytes() const {
     return writePos_ - readPos_;
 }
+
 // 可预留空间：已经读过的就没用了，等于读下标
 size_t Buffer::PrependableBytes() const {
     return readPos_;
@@ -21,6 +23,7 @@ const char* Buffer::Peek() const {
     
     return &buffer_[readPos_];
 }
+
 // 确保缓冲区中有足够的写空间存储len字节的数据。若不足则调用MakeSpace_函数扩展缓冲区大小
 void Buffer::EnsureWriteable(size_t len) {
     if(len > WritableBytes()) {
@@ -28,21 +31,24 @@ void Buffer::EnsureWriteable(size_t len) {
     }
     assert(len <= WritableBytes());
 }
+
 // 移动写下标，表示已经写入了len字节的数据。在Append中使用
 void Buffer::HasWritten(size_t len) {
     writePos_ += len;
 }
+
 // 移动读下标，表示已经读取了len字节的数据
 void Buffer::Retrieve(size_t len) {
     readPos_ += len;
 }
+
 // 从缓冲区中一直读数据，读到end指针的位置
 void Buffer::RetrieveUntil(const char* end) {
     assert(Peek() <= end );
     Retrieve(end - Peek()); // end指针 - 读指针 长度
 }
 
-// 取出所有数据，buffer归零，读写下标归零，在别的函数中会用到
+// 取出所有数据，buffer归零，读写下标归零,在别的函数中会用到
 void Buffer::RetrieveAll() {
     bzero(&buffer_[0], buffer_.size()); // 覆盖原本数据
     readPos_ = writePos_ = 0;
@@ -59,7 +65,7 @@ std::string Buffer::RetrieveAllToStr() {
 const char* Buffer::BeginWriteConst() const {
     return &buffer_[writePos_];
 }
-// 写指针的位置
+
 char* Buffer::BeginWrite() {
     return &buffer_[writePos_];
 }
@@ -71,15 +77,18 @@ void Buffer::Append(const char* str, size_t len) {
     std::copy(str, str + len, BeginWrite());    // 将str放到写下标开始的地方
     HasWritten(len);    // 移动写下标
 }
+
 void Buffer::Append(const std::string& str) {
     Append(str.c_str(), str.size());
 }
+
 // 将二进制数据data中的len字节追加到缓冲区中
-void Buffer::Append(const void* data, size_t len) {
+void Append(const void* data, size_t len) {
     Append(static_cast<const char*>(data), len);
 }
+
 // 将buffer中的读下标的地方放到该buffer中的写下标位置
-void Buffer::Append(const Buffer& buff) {
+void Append(const Buffer& buff) {
     Append(buff.Peek(), buff.ReadableBytes());
 }
 
@@ -121,6 +130,7 @@ ssize_t Buffer::WriteFd(int fd, int* Errno) {
 char* Buffer::BeginPtr_() {
     return &buffer_[0];
 }
+
 const char* Buffer::BeginPtr_() const{
     return &buffer_[0];
 }

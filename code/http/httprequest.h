@@ -45,8 +45,7 @@ private:
     void ParsePost_();                                  // 处理Post事件
     void ParseFromUrlencoded_();                        // 从url种解析编码
 
-    static bool UserVerify(const std::string& name, const std::string& pwd, bool isLogin);  // 验证用户名和密码
-
+    static bool UserVerify(const std::string& name, const std::string& pwd, bool isLogin);  // 用户验证
 
     //类的私有成员变量，存储HTTP请求的状态、方法、路径、版本、主体、头部、POST参数
     PARSE_STATE state_;
@@ -56,7 +55,7 @@ private:
 
     static const std::unordered_set<std::string> DEFAULT_HTML; //静态常量无序集合，存储默认的HTML内容
     static const std::unordered_map<std::string, int> DEFAULT_HTML_TAG; //静态常量无序映射，存储默认的HTML标签以及对应的整数值
-    static int ConverHex(char ch);  // 16进制转换为10进制，处理URL编码时需要这种转换
+    static int ConverHex(char ch);  // 16进制转换为10进制
 };
 
 #endif

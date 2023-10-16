@@ -19,7 +19,7 @@ public:
     HttpConn();
     ~HttpConn();
     
-    void init(int fd, const sockaddr_in& addr);
+    void init(int sockFd, const sockaddr_in& addr);
     ssize_t read(int* saveErrno);
     ssize_t write(int* saveErrno);
     void Close();
@@ -50,12 +50,12 @@ private:
     bool isClose_;
     
     int iovCnt_;
-    struct iovec iov_[2]; // 多个缓冲区的I/O操作，允许将多个缓冲区的数据一次性写入或读取到文件描述符
+    struct iovec iov_[2];// 多个缓冲区的I/O操作，允许将多个缓冲区的数据一次性写入或读取到文件描述符
     // 包括iov_base和iov_len，一个指向缓冲区的指针，一个表示缓冲区的长度
     // 用于将响应报文的数据从缓冲区writeBuff_以及文件数据写入到客户端连接的文件描述符fd_中
     //iov_[0] 包含了响应报文的头部和部分正文内容。iov_[0].iov_base 是指向缓冲区 writeBuff_ 中待发送数据的指针，iov_[0].iov_len 是待发送数据的长度。
     //iov_[1] 包含了文件数据，当需要发送文件时才会用到。iov_[1].iov_base 是指向文件数据的指针，iov_[1].iov_len 是文件数据的长度。
-
+    
     Buffer readBuff_; // 读缓冲区
     Buffer writeBuff_; // 写缓冲区
 
@@ -64,4 +64,4 @@ private:
 };
 
 
-#endif
+#endif //HTTP_CONN_H

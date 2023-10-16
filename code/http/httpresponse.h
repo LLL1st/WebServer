@@ -24,9 +24,9 @@ public:
     int Code() const { return code_; }
 
 private:
-    void AddStateLine_(Buffer &buff);  //添加行
-    void AddHeader_(Buffer &buff);     //添加头
-    void AddContent_(Buffer &buff);    //添加消息体
+    void AddStateLine_(Buffer &buff);   //添加行
+    void AddHeader_(Buffer &buff);      //添加头
+    void AddContent_(Buffer &buff);     //添加消息体
 
     void ErrorHtml_();
     std::string GetFileType_();
@@ -34,16 +34,16 @@ private:
     int code_;
     bool isKeepAlive_;
 
-    std::string path_;   //响应路径
-    std::string srcDir_; //响应目录
+    std::string path_;     //响应路径
+    std::string srcDir_;   //相应目录
     
     char* mmFile_; 
-    struct stat mmFileStat_; //文件的元数据信息，包括文件的类型和访问权限st_mode、文件的大小 st_size
+    struct stat mmFileStat_;    //文件的元数据信息，包括文件的类型和访问权限st_mode、文件的大小 st_size
 
-    static const std::unordered_map<std::string, std::string> SUFFIX_TYPE;  // 后缀类型
-    static const std::unordered_map<int, std::string> CODE_STATUS;  // 状态码
-    static const std::unordered_map<int, std::string> CODE_PATH;    // 状态路径
+    static const std::unordered_map<std::string, std::string> SUFFIX_TYPE;  // 后缀类型集
+    static const std::unordered_map<int, std::string> CODE_STATUS;          // 编码状态集
+    static const std::unordered_map<int, std::string> CODE_PATH;            // 编码路径集
 };
 
 
-#endif 
+#endif //HTTP_RESPONSE_H

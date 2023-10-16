@@ -14,8 +14,8 @@ public:
 
     // 可写的数量：buffer大小 - 写下标
     size_t WritableBytes() const;
-    // 可读的数量：写下标 - 读下标    
-    size_t ReadableBytes() const;
+    // 可读的数量：写下标 - 读下标 
+    size_t ReadableBytes() const ;
     // 可预留的空间：已读过的就没用了，等于读下标
     size_t PrependableBytes() const;
 

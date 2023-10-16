@@ -2,23 +2,19 @@
 using namespace std;
 
 // 存储默认的HTML内容
-const unordered_set<string> HttpRequest::DEFAULT_HTML{
-    "/index",
-    "/register",
-    "/login",
-    "/welcome",
-    "/video",
-    "/picture",
+const unordered_set<string> HttpRequest::DEFAULT_HTML {
+    "/index", "/register", "/login", "/welcome", "/video", "/picture",
 };
 
 // 存储默认的HTML标签，登录/注册
-const unordered_map<string, int> HttpRequest::DEFAULT_HTML_TAG{
-    {"/login.html", 1}, {"/register.html", 0}};
+const unordered_map<string, int> HttpRequest::DEFAULT_HTML_TAG {
+    {"/login.html", 1}, {"/register.html", 0}
+};
 
 // 初始化操作，一些清零操作
 void HttpRequest::Init() {
-    state_ = REQUEST_LINE;
-    method_ = path_ = version_ = body_ = "";
+    state_ = REQUEST_LINE;  // 初始状态
+    method_ = path_ = version_= body_ = "";
     header_.clear();
     post_.clear();
 }
@@ -29,19 +25,20 @@ bool HttpRequest::parse(Buffer& buff) {
     if(buff.ReadableBytes() == 0)   // 没有可读的字节
         return false;
     // 读取数据开始
-    while(buff.ReadableBytes() && state_ != FINISH) { //只要buff中还有可读的字节，并且HTTP请求不是FINISH，就继续循环
-        const char* lineend = search(buff.Peek(), buff.BeginWriteConst(), END, END+2); //从写指针的位置到读指针的位置搜索"\r\n", 返回指向缓冲区第一个\r\n的指针
-        string line(buff.Peek(), lineend); // 将找到的一行存储在字符串中
+    while(buff.ReadableBytes() && state_ != FINISH) {
+        // 从buff中的读指针开始到读指针结束，这块区域是未读取得数据并去处"\r\n"，返回有效数据得行末指针
+        const char* lineend = search(buff.Peek(), buff.BeginWriteConst(), END, END+2);  //从写指针的位置到读指针的位置搜索"\r\n", 返回指向缓冲区第一个\r\n的指针
+        string line(buff.Peek(), lineend);  // 将找到的一行存储在字符串中
         switch (state_)
         {
-        case REQUEST_LINE:  //解析请求行
+        case REQUEST_LINE:
             // 解析错误
             if(!ParseRequestLine_(line)) {
                 return false;
             }
             ParsePath_();   // 解析路径
             break;
-        case HEADERS:   //解析请求头
+        case HEADERS:
             ParseHeader_(line);
             if(buff.ReadableBytes() <= 2) {  // 说明是get请求，后面为\r\n
                 state_ = FINISH;   // 提前结束
@@ -72,24 +69,23 @@ bool HttpRequest::ParseRequestLine_(const string& line) {
         method_ = Match[1];
         path_ = Match[2];
         version_ = Match[3];
-        state_ = HEADERS; //下一步解析HTTP请求头
+        state_ = HEADERS;
         return true;
     }
     LOG_ERROR("RequestLine Error");
     return false;
 }
 
-// 解析路径，统一一下path名称，方便后面解析资源
+// 解析路径，统一一下path名称,方便后面解析资源
 void HttpRequest::ParsePath_() {
     if(path_ == "/") {
-        path_ = "/index.html"; //如果请求路径为/ ，则设置路径为"/index.html"
+        path_ = "/index.html";  //如果请求路径为/ ，则设置路径为"/index.html"
     } else {
         if(DEFAULT_HTML.find(path_) != DEFAULT_HTML.end()) {
             path_ += ".html";
-        } //如果请求的路径不是/，则检查路径是否在DEFAULT_HTML集合中，在的话，末尾添上".html"
+        }   //如果请求的路径不是/，则检查路径是否在DEFAULT_HTML集合中，在的话，末尾添上".html"
     }
 }
-
 
 void HttpRequest::ParseHeader_(const string& line) {
     // ^字符串的开始 ([^:]*)匹配任何不包含冒号的字符序列 :匹配冒号 空格?匹配零个或一个空格 (.*)匹配任何字符除了换行符 $字符串的结束
@@ -97,15 +93,14 @@ void HttpRequest::ParseHeader_(const string& line) {
     smatch Match;
     if(regex_match(line, Match, patten)) {
         header_[Match[1]] = Match[2];
-    } else {    
+    } else {    // 匹配失败说明首部行匹配完了，状态变化
         state_ = BODY;
     }
 }
 
-
 void HttpRequest::ParseBody_(const string& line) {
     body_ = line;
-    ParsePost_();  //处理POST请求
+    ParsePost_();
     state_ = FINISH;    // 状态转换为下一个状态
     LOG_DEBUG("Body:%s, len:%d", line.c_str(), line.size());
 }
@@ -120,7 +115,7 @@ int HttpRequest::ConverHex(char ch) {
     return ch;
 }
 
-// 处理post请求，解析HTTP POST请求的主体内容
+// 处理post请求
 void HttpRequest::ParsePost_() {
     if(method_ == "POST" && header_["Content-Type"] == "application/x-www-form-urlencoded") {
         ParseFromUrlencoded_();     // POST请求体示例
@@ -182,22 +177,19 @@ void HttpRequest::ParseFromUrlencoded_() {
     }
 }
 
-// 用户验证
 bool HttpRequest::UserVerify(const string &name, const string &pwd, bool isLogin) {
     if(name == "" || pwd == "") { return false; }
     LOG_INFO("Verify name:%s pwd:%s", name.c_str(), pwd.c_str());
-
     MYSQL* sql;
-    SqlConnRAII(&sql, SqlConnPool::getInstance());
+    SqlConnRAII(&sql, SqlConnPool::Instance());
     assert(sql);
     
     bool flag = false;
     unsigned int j = 0;
-    char order[256] = { 0 };        //存储sql查询或插入命令
-    MYSQL_FIELD *fields = nullptr;  //数据库查询后存储字段信息
-    MYSQL_RES *res = nullptr;       //数据库查询后查询信息
+    char order[256] = { 0 };    //存储sql查询或插入命令
+    MYSQL_FIELD *fields = nullptr;
+    MYSQL_RES *res = nullptr;   //数据库查询后查询信息
     
-    // 不是登录
     if(!isLogin) { flag = true; }
     /* 查询用户及密码 */
     snprintf(order, 256, "SELECT username, password FROM user WHERE username='%s' LIMIT 1", name.c_str());
